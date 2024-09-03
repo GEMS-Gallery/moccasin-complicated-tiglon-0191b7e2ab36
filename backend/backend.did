@@ -1,0 +1,21 @@
+type Time = int;
+type Result = 
+ variant {
+   err: text;
+   ok: nat;
+ };
+type Certificate = 
+ record {
+   createdAt: Time;
+   details: text;
+   energySource: text;
+   id: nat;
+   owner: opt principal;
+   price: nat;
+ };
+service : {
+  addCertificate: (text, text, nat) -> (Result);
+  getCertificates: () -> (vec Certificate) query;
+  login: () -> (bool);
+  logout: () -> (bool);
+}
