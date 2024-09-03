@@ -7,6 +7,7 @@ export interface Certificate {
   'energySource' : string,
   'owner' : [] | [Principal],
   'createdAt' : Time,
+  'imageUrl' : string,
   'details' : string,
   'price' : bigint,
 }
@@ -14,7 +15,7 @@ export type Result = { 'ok' : bigint } |
   { 'err' : string };
 export type Time = bigint;
 export interface _SERVICE {
-  'addCertificate' : ActorMethod<[string, string, bigint], Result>,
+  'addCertificate' : ActorMethod<[string, string, bigint, string], Result>,
   'getCertificates' : ActorMethod<[], Array<Certificate>>,
   'login' : ActorMethod<[], boolean>,
   'logout' : ActorMethod<[], boolean>,

@@ -10,11 +10,12 @@ type Certificate =
    details: text;
    energySource: text;
    id: nat;
+   imageUrl: text;
    owner: opt principal;
    price: nat;
  };
 service : {
-  addCertificate: (text, text, nat) -> (Result);
+  addCertificate: (text, text, nat, text) -> (Result);
   getCertificates: () -> (vec Certificate) query;
   login: () -> (bool);
   logout: () -> (bool);

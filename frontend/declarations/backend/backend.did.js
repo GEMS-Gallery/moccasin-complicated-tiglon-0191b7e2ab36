@@ -6,11 +6,16 @@ export const idlFactory = ({ IDL }) => {
     'energySource' : IDL.Text,
     'owner' : IDL.Opt(IDL.Principal),
     'createdAt' : Time,
+    'imageUrl' : IDL.Text,
     'details' : IDL.Text,
     'price' : IDL.Nat,
   });
   return IDL.Service({
-    'addCertificate' : IDL.Func([IDL.Text, IDL.Text, IDL.Nat], [Result], []),
+    'addCertificate' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat, IDL.Text],
+        [Result],
+        [],
+      ),
     'getCertificates' : IDL.Func([], [IDL.Vec(Certificate)], ['query']),
     'login' : IDL.Func([], [IDL.Bool], []),
     'logout' : IDL.Func([], [IDL.Bool], []),

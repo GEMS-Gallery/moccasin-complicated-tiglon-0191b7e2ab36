@@ -19,12 +19,13 @@ actor {
     price: Nat;
     owner: ?Principal;
     createdAt: Time.Time;
+    imageUrl: Text;
   };
 
   stable var certificates : [Certificate] = [];
   stable var nextCertificateId : Nat = 0;
 
-  public shared(msg) func addCertificate(energySource: Text, details: Text, price: Nat) : async Result.Result<Nat, Text> {
+  public shared(msg) func addCertificate(energySource: Text, details: Text, price: Nat, imageUrl: Text) : async Result.Result<Nat, Text> {
     Debug.print("Attempting to add certificate");
     try {
       let newCertificate : Certificate = {
@@ -34,6 +35,7 @@ actor {
         price = price;
         owner = ?msg.caller;
         createdAt = Time.now();
+        imageUrl = imageUrl;
       };
       certificates := Array.append(certificates, [newCertificate]);
       nextCertificateId += 1;

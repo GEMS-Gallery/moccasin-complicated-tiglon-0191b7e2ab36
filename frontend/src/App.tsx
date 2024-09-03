@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Routes, Route, Link } from 'react-router-dom';
-import { AppBar, Toolbar, Typography, Button, Container, CircularProgress } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Container, CircularProgress, Grid, Card, CardContent, CardMedia, CardActions } from '@mui/material';
+import { styled } from '@mui/material/styles';
 import { AuthClient } from '@dfinity/auth-client';
 import { backend } from '../declarations/backend';
 
@@ -11,7 +12,31 @@ type Certificate = {
   price: bigint;
   owner: [] | [Principal];
   createdAt: bigint;
+  imageUrl: string;
 };
+
+const StyledAppBar = styled(AppBar)(({ theme }) => ({
+  backgroundColor: theme.palette.primary.main,
+}));
+
+const StyledContainer = styled(Container)(({ theme }) => ({
+  marginTop: theme.spacing(4),
+  marginBottom: theme.spacing(4),
+}));
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  height: '100%',
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const StyledCardMedia = styled(CardMedia)({
+  paddingTop: '56.25%', // 16:9 aspect ratio
+});
+
+const StyledCardContent = styled(CardContent)({
+  flexGrow: 1,
+});
 
 const App: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -67,12 +92,16 @@ const App: React.FC = () => {
   };
 
   if (loading) {
-    return <CircularProgress />;
+    return (
+      <Container>
+        <CircularProgress />
+      </Container>
+    );
   }
 
   return (
     <div className="App">
-      <AppBar position="static">
+      <StyledAppBar position="static">
         <Toolbar>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Renewable Energy Certificate Market
@@ -83,35 +112,54 @@ const App: React.FC = () => {
             <Button color="inherit" onClick={login}>Login</Button>
           )}
         </Toolbar>
-      </AppBar>
+      </StyledAppBar>
 
-      <Container>
+      <StyledContainer>
         <nav>
-          <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/list">List Certificate</Link></li>
-          </ul>
+          <Button component={Link} to="/" color="primary">Home</Button>
+          <Button component={Link} to="/list" color="primary">List Certificate</Button>
         </nav>
 
         <Routes>
           <Route path="/" element={<Home certificates={certificates} />} />
           <Route path="/list" element={<ListCertificate isAuthenticated={isAuthenticated} />} />
         </Routes>
-      </Container>
+      </StyledContainer>
     </div>
   );
 };
 
 const Home: React.FC<{ certificates: Certificate[] }> = ({ certificates }) => (
   <div>
-    <h1>Available Certificates</h1>
-    {certificates.map((cert) => (
-      <div key={cert.id.toString()}>
-        <h2>{cert.energySource}</h2>
-        <p>{cert.details}</p>
-        <p>Price: {cert.price.toString()}</p>
-      </div>
-    ))}
+    <Typography variant="h4" component="h1" gutterBottom>
+      Available Certificates
+    </Typography>
+    <Grid container spacing={4}>
+      {certificates.map((cert) => (
+        <Grid item key={cert.id.toString()} xs={12} sm={6} md={4}>
+          <StyledCard>
+            <StyledCardMedia
+              image={cert.imageUrl}
+              title={cert.energySource}
+            />
+            <StyledCardContent>
+              <Typography gutterBottom variant="h5" component="h2">
+                {cert.energySource}
+              </Typography>
+              <Typography>
+                {cert.details}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Price: {cert.price.toString()}
+              </Typography>
+            </StyledCardContent>
+            <CardActions>
+              <Button size="small" color="primary">View Details</Button>
+            </CardActions>
+          </StyledCard>
+        </Grid>
+      ))}
+    </Grid>
   </div>
 );
 
@@ -119,12 +167,13 @@ const ListCertificate: React.FC<{ isAuthenticated: boolean }> = ({ isAuthenticat
   const [energySource, setEnergySource] = useState('');
   const [details, setDetails] = useState('');
   const [price, setPrice] = useState('');
+  const [imageUrl, setImageUrl] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isAuthenticated) {
       try {
-        const result = await backend.addCertificate(energySource, details, BigInt(price));
+        const result = await backend.addCertificate(energySource, details, BigInt(price), imageUrl);
         console.log('Certificate added:', result);
         // Reset form or show success message
       } catch (error) {
@@ -136,34 +185,61 @@ const ListCertificate: React.FC<{ isAuthenticated: boolean }> = ({ isAuthenticat
   };
 
   if (!isAuthenticated) {
-    return <p>Please login to list a certificate.</p>;
+    return <Typography>Please login to list a certificate.</Typography>;
   }
 
   return (
     <div>
-      <h1>List Your Certificate</h1>
+      <Typography variant="h4" component="h1" gutterBottom>
+        List Your Certificate
+      </Typography>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={energySource}
-          onChange={(e) => setEnergySource(e.target.value)}
-          placeholder="Energy Source"
-          required
-        />
-        <textarea
-          value={details}
-          onChange={(e) => setDetails(e.target.value)}
-          placeholder="Certificate Details"
-          required
-        />
-        <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder="Price"
-          required
-        />
-        <button type="submit">List Certificate</button>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Energy Source"
+              value={energySource}
+              onChange={(e) => setEnergySource(e.target.value)}
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              multiline
+              rows={4}
+              label="Certificate Details"
+              value={details}
+              onChange={(e) => setDetails(e.target.value)}
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              type="number"
+              label="Price"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              fullWidth
+              label="Image URL"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <Button type="submit" variant="contained" color="primary">
+              List Certificate
+            </Button>
+          </Grid>
+        </Grid>
       </form>
     </div>
   );
